@@ -1,0 +1,34 @@
+\documentclass{article}
+\title{Feasibility Analysis - DeSybil}
+\author{Dolan Murvihill}
+\date{}
+
+\begin{document}
+\section{LTE}
+\section{GSM}
+\section{CDMA}
+\section{Wi-Fi}
+\section{Bluetooth}
+While a Bluetooth interface has a 48-bit MAC address, it is not usually
+transmitted as part of a reply to a discovery request; instead, Bluetooth
+devices send a human-readable hostname. This could be useful in cases where the
+owner of the device has not set a Bluetooth name, since the default Bluetooth
+identifier would positively identify the model of the phone.
+
+Beginning in 2003, the public began noticing unsolicited messages on their
+Bluetooth-enabled devices. These messages appeared when a Bluetooth-enabled
+device paired with another Bluetooth device nearby and sent an unwanted message
+to its owner. \emph{Bluejacking}, as it was called, was often used for guerrilla
+marketing, but it might also be used in a phishing attack - an attacker could
+use bluejacking to send a link to the owner of a nearby Bluetooth device and
+then look for traffic that resembles web traffic on Wi-Fi and other interfaces.
+%citation needed on this paragraph.
+
+The prospect of running a De-Sybil attack on a Bluetooth device suffers from a
+huge drawback: almost all Bluetooth devices disable inquiry responses by
+default. %citation needed
+We should conduct a passive observation of Bluetooth transmission behavior in a
+crowded area to get a sense for how many devices a Bluetooth attack may be
+possible against.
+
+\section{NFC}

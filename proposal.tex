@@ -1,0 +1,164 @@
+\documentclass{article}
+\author{Dolan Murvihill \and Cindy Rogers \and Sam Abradi}
+\title{Proposal for De-Sybil Attack}
+\begin{document}
+\maketitle
+\section*{Executive Summary}
+    Modern mobile devices have a number of different network interfaces, including Bluetooth, WiFi, GSM/CDMA, and LTE. At present it is not easy to identify which of these interfaces belong to the same device. Being able to link two network interfaces to the same device may have drastic implications for personal security, as depending on the ease of deployment, linking device addresses could allow easy tracking of anyone 
+    with a mobile device. Our goal is to explore the security implications of being able to perform this linking.
+    \section{Need}
+    \subsection*{Geolocation}
+    Authorities would often like to use geolocation to find the user of a device. It is possible for law enforcement to use a phone's built-in GPS or IP address information to locate a smartphone user, but this method is very unpopular with privacy advocates and may not remain legal for long [1]. Law enforcement would like a way to geolocate a user based only on publicly available wireless information.
+    \subsection*{Eavesdropping}
+    There is a known vulnerability in Variable bitrate encoded VoIP calls, wherein discrete phonemes are detectable
+                based on packet size, even within encrypted packets [2]. Given that many phones now
+                support call switching between IP and cellular networks, it may be possible to move a call in progress from a spread-spectrum 4G or 3G call to an easier-to-sniff 802.11 call - enabling attackers to eavesdrop.
+                \subsection*{Exploitation}
+                If we are able to link adapters on a phone, it may be possible to create exploits that 
+            rely on both wireless adapters to gain access. Currently, attackers would have a hard time using these exploits, as they would be unable to tell which interfaces belong to the same device. As far as we can tell, there 
+            has been no research in this area, perhaps because it has not previously been
+            easy to link multiple wireless interfaces to the same device or because it has
+            been overlooked.
+            \section{Approach}
+            We have identified two potential avenues to link interfaces on cellphones; the first is an offline approach
+        based on information provided by wireless device manufacturers, where we would poll manufacturers
+        to gather information that we could use to inform our guesses. The second is an online approach
+        that involves using various attack techniques to observe the behavior of differing interfaces
+        in real time.
+        \subsection{Literature Review}
+        We will research wireless netowrk protocols used on mobile phones that we are likely
+            to encounter during the project, 4G, 3G, Android phones (as our target market (consists
+            of 80\% of the market)), and well-known existing attacks against phones.
+        \subsection{Offline Approches}
+        The easy way to identify potential links would be to ask the manufacturers of wireless
+                radio chips whether they use a particular pattern in their hardware address assignment
+                policies. If so, we can assume that one could guess the hardware address of one interface
+                based on the address of another and our problem is solved trivially. If we fail to gather
+                useful information on specific assignment patterns manufacturers use, we could obtain a sample
+                database listing hardware addresses based on device serial numbers, and use statistical
+                analysis to try to find patterns in hardware address assignment. An advantage of this approach
+                is that it could be very easy. The major disadvantage is that the information we gather
+                may not generalize well to all manufacturers.  Thus, it may be useful to target the
+                majority of cellphones by contacting only the largest manufacturers. Our online attacks below
+                would help us to determine at least one interface address and from there we could find all other
+                addresses.
+            \subsubsection* {Vendor Analysis}
+            Because hardware addresses are allocated in blocks by an issuing authority, it is trivial
+                to identify the manufacturer of an interface based on its hardware address; it may be
+                possible to identify some manufacturer pairings that are more likely than others (for
+                instance, a Qualcomm 802.11 interface may be more likely to be matched with an Intel 
+                Bluetooth radio). The simplest case is all-in-one radios, where one manufacturer puts
+                all of the wireless radios on the same chip; seeing an all-in-one radio on one interface
+                immediately rules out other types of wireless interfaces from different manufacturers
+                as possible links.
+            \subsubsection* {Temporal Analysis}
+            Hardware address prefixes leak manufacturer information, but hardware address suffixes
+                may leak time information; depending on a manufacturer's hardware address assignment policy,
+                we may be able to learn approximately when an interface was made based on the hardware
+                address alone. This information can then be correlated with other interfaces to help find
+                a likely match. For instance, a 2009 WiFi radio is unlikely to belong to the same device
+                as a 2013 NFC radio.
+            \subsubsection* {Geographic Analysis}
+            We may be able to find information about which particular manufacturing facility created
+                a device, based on its hardware address (that is, the exact location of the manufacturing
+                facility). Identifying a particular manufacturing facility could tell us more about which interfaces
+                are more likely to match in that we could contact that facility in particular for futher information.
+                \subsection{Research Feasibility of Online Attacks}
+                We will research each of the following attacks and choose at least one to create based on
+            the security risk it entails.
+            \subsubsection*{Possible Attack 1: Call Interface Transfer}            
+            Offer an alternative Wireless service or jam an existing wireless service 
+                and cause the target to fall back to another interface (4G or 3G). This attack
+                requries us to have previously written and deployed a mobile app that sniffs mobile
+                packets for information. The app records this information.
+                \begin {itemize}
+                  \item Identify call on WiFi with a wireless adapter in monitor mode to find 
+                     target phone’s 802.11 MAC address. Compile a list of possible LTE hardware addressses that
+                         this cellphone is using to communicate.
+                         \item Jam the WiFi signal. Phone will either fall back automatically to 
+                           4G or 3G or will re-dial using 4G or 3G.
+                    \item Listen on another phone using a phone sniffing application to compile a list
+                      of possible hardware addresses for the cellular interface.
+                    \item Link the set of MAC addresses that were originally recorded over wifi to the
+                      set of addresses recorded over the phone network by comparison.
+                \end {itemize}
+                \subsubsection*{Possible Attack 2: Radio Frequency Fingerprinting via Transient Analysis}
+                Any Radio Frequency Device will have some form of transient behavior upon keying up. 
+                This behavior is unique product of the specific radio device design, and is differentiable 
+                between diferent models of radio. Bell NYNEX actually used this technique to detect 
+                fraudulently configured cell phones on their network. This would allow us to cut 
+                down our dataset to only traffic from a specific type of phone.
+                \begin{itemize}
+                  \item Build a table of device signatures
+                    \item Analyze spectrum around a target device to see if there are multiple devices same 
+                    family, if there are not, we have now isolated all interface addresses
+                    \item If there are multiple devices that fit the same signature, fall back to another attack vector, 
+                    but with a vastly decreased search space.
+                \end{itemize}
+                \subsubsection*{Possible Attack 3: Phone Number Sniffing}
+                Assuming that we have a particular cellphone's phone number and that we have a 4G/3G packet sniffing
+                application:
+                \begin{itemize}
+                  \item Call target while they are in a wifi network.
+                    \item Sniff users' wifi pacekts for MAC information as the call connects.
+                    \item Call target while they are in an LTE necessary area.
+                    \item Sniff information as call connects over 4G/3G using Cellphone sniffing app.
+                    \item Use timing to correlate these data sets.
+                \end{itemize}
+            \subsubsection*{Possible Attack 4: Cache-based timing analysis}
+            If we know the target's IP address and they are running a service we can query (such as DNS),
+                we can send a query to the device over one network, causing the reply to be cached on the mobile
+                device.  We can then send the same query to all devices on a different network, and time the
+                replies. One interface on the second network should have a shorter response time because we
+                caused it to cache its reply - that one is our target. Once discovering which interface is
+                associated with our target, we will repeat the process using a different interface to link
+                their interfaces.
+
+                \subsection{Evaluation Methodology}
+                To evaluate our attack, we will set up a table or booth in a public area and ask for willing
+            participants to provide us with information about their mobile devices. Participants will provide
+            us one hardware interface address from their mobile device, and we will perform a de-sybil
+            attack on that device, attempting to link its interfaces. We will ask the participant to cooperate
+            as needed by our threat model ensuring they understand what our project risks may entail so that we 
+            obtain informed consent. We will record the type of attack, whether the attack succeeded
+            or failed, the number of interfaces from each protocol seen on the network during the experiment,
+            and any other information we think we may need.
+            \section{Benefit}
+            The benefit of our approach is that we will explore multiple ways that one could acomplish the goal
+        we have and then work on analyzing the approach we find best suited to the goal. If we could
+        prove that any number of these approaches work and are feasible for a target audience other than our
+        test cases, we would prove that there is a significant privacy risk that most smart phone users are
+        unaware of.  The following benefits would thus apply:
+        \subsection*{Law Enforcement}
+        Law enforcement would benefit from our project by quickly locating a suspect who is using a mobile phone
+            on one of the enforcement's owned wireless networks. They would have another tool at their disposal to
+            find cellphones on top of the tools they already use to locate cellphones.
+            \subsection*{Privacy Awareness}
+            We will be exploring to what extent users are unaware of the privacy risks of owning a smartphone as well as what
+            particular privacy risks are involved with owning a cell phone.  As we will involve students from WPI's general
+            body, we will be gathering research data as well as informing the student body of these risks.
+            \subsection*{Manufacturer Behavior Change}
+            Demonstration of a successful linking of mobile phone interfaces would pressure manufacturers
+            to implement security measures while manufacturing phones and linking interfaces. This may reduce the 
+            size of the useful hardware address space.
+            \section{Competition}
+            Very little competition for this project has been identified in the field of tracking a phone through a desybil attack.
+            However, there are estabilished ways of tracking cellphones using GPS or through cell phone companies. Our goal is to 
+            explore the field of tracking phones with multible wireless interfaces. No warrant is needed to track a cellphone's
+        geolocation in the United States, but that may change in the future (ACLU).
+        The Marco Polo project, by Taylor \emph{et al.} also helps law enforcement to geolocate suspects based on wireless data.
+        Our project is different from Marco Polo in that we are focusing on cellphone
+        location. We have not found any competition directly researching cross protocol information leaks
+        as we plan to research in our project.
+        Our approach for Radio Frequency Fingerprinting via Transient Analysis was based on Bell NYNEX's 
+        technique to discover fraudulently confugured cell phones on their network.  We are using this 
+        approach for a different purpose than NYNEX.
+        For any offline attacks we succeed in performing, it may be possible that cellphone manufacturers are well aware of the
+        security risks of any patterns they may use in their cellphone design, but choose to use that pattern because of other benefits
+        (ease of manufacturing process, business, regulations etc.).
+    \section{References}
+    \begin{enumerate}
+    \item ACLU, \emph{Cell Phone Location Tracking Public Records Request}. https://www.aclu.org/protecting-civil-liberties-digital-age/cell-phone-location-tracking-public-records-request
+    \item White \emph{et al.}, \emph{Phonotactic Reconstruction of Encrypted VoIP Conversations: Hookt on fon-iks}, http://www.cs.unc.edu/~fabian/papers/foniks-oak11.pdf.\\
+    \end{enumerate}
+\end{document}
